@@ -1,36 +1,36 @@
-import { Observable, Observer } from "rxjs";
+import { Observable, Observer } from "rxjs"
 
 const observer: Observer<any> = {
-  next: value => console.log('siguiente [next]: ', value),
-  error: error => console.warn('error [obs]: ', error);
-  
-}
+  next: (value) => console.log("next: ", value),
+  error: (error) => console.warn("error: ", error),
+  complete: () => console.info("completado"),
+};
 
-const obs$ = new Observable<string>( subs => {
-  subs.next('Hola Jupiter')
-  subs.next('Hola Saturno')
-  
-  subs.next('Hola Jupiter');
-  
-  subs.complete();
-  
-  subs.next('Hola Saturno');
 
- 
+const intervalo$ = new Observable<number>(subscriber => {
 
+  let count = 0;
+  //*cuando nos suscribimos creamos una instancia del observable.
+  const interval = setInterval(() => {
+    count++
+    subscriber.next(count)
+    console.log(count)
+  }, 1000)
+
+  return () => {
+    clearInterval(interval);
+    console.log('fuga de memoria destruida: intervalo destruido');
+  }
+  
 });
 
+const subscription = intervalo$.subscribe(num => console.log('Segundo: ', num));
+const subscription2 = intervalo$.subscribe(num => console.log('Segundo: ', num));
+const subscription3 = intervalo$.subscribe(num => console.log('Segundo: ', num));
 
-obs$.subscribe( 
-  valor=> console.log('next: ', valor),
-  error => console.warn('error: ', error),
-  () => console.info('completado')
-  
-  
- );
-
-
-
-
-
-
+setTimeout(() => {
+  subscription.unsubscribe();
+  subscription2.unsubscribe();
+  subscription3.unsubscribe();
+  console.log('cancelado');
+}, 5000);
